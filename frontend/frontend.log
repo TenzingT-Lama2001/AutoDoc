@@ -1,0 +1,22 @@
+(node:20696) [DEP0174] DeprecationWarning: Calling promisify on a function that returns a Promise is likely a mistake.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+> frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.109:3000
+- Environments: .env.local
+✓ Ready in 4.4s
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+○ Compiling / ...
+ GET / 200 in 17.4s (next.js: 17.0s, application-code: 362ms)
+ GET / 200 in 549ms (next.js: 402ms, application-code: 147ms)
+ GET / 200 in 99ms (next.js: 12ms, application-code: 88ms)
+ GET / 200 in 100ms (next.js: 9ms, application-code: 91ms)
