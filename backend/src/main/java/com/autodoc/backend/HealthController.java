@@ -8,6 +8,13 @@ import java.util.Map;
 @RestController
 public class HealthController {
 
+
+    @GetMapping("/")
+    public String home() {
+        return "AutoDoc backend is running";
+    }
+
+
     @GetMapping("/health")
     public Map<String, String> health() {
         return Map.of("status", "ok");
