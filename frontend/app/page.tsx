@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -21,7 +22,7 @@ export default function Home() {
         <h1 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
           AutoDoc
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-6">
           <span
             className={`h-3 w-3 rounded-full ${
               ok ? "bg-green-500" : status === "checking..." ? "bg-yellow-400 animate-pulse" : "bg-red-500"
@@ -31,6 +32,12 @@ export default function Home() {
             Backend: <span className="font-mono font-medium text-zinc-900 dark:text-zinc-50">{status}</span>
           </span>
         </div>
+        <Link
+          href="/chat"
+          className="inline-block rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 transition"
+        >
+          Open Chat →
+        </Link>
       </div>
     </main>
   );
