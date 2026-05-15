@@ -1,4 +1,4 @@
-(node:20696) [DEP0174] DeprecationWarning: Calling promisify on a function that returns a Promise is likely a mistake.
+(node:11740) [DEP0174] DeprecationWarning: Calling promisify on a function that returns a Promise is likely a mistake.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 
 > frontend@0.1.0 dev
@@ -8,15 +8,10 @@
 - Local:         http://localhost:3000
 - Network:       http://192.168.1.109:3000
 - Environments: .env.local
-✓ Ready in 4.4s
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
+✓ Ready in 4.6s
+⚠ Slow filesystem detected. The benchmark took 214ms. If E:\AutoDoc\frontend\.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
 
-
-○ Compiling / ...
- GET / 200 in 17.4s (next.js: 17.0s, application-code: 362ms)
- GET / 200 in 549ms (next.js: 402ms, application-code: 147ms)
- GET / 200 in 99ms (next.js: 12ms, application-code: 88ms)
- GET / 200 in 100ms (next.js: 9ms, application-code: 91ms)
+ GET / 200 in 1876ms (next.js: 1273ms, application-code: 603ms)
+○ Compiling /chat ...
+ GET /chat 200 in 6.7s (next.js: 6.6s, application-code: 96ms)
