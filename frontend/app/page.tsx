@@ -32,12 +32,26 @@ export default function Home() {
             Backend: <span className="font-mono font-medium text-zinc-900 dark:text-zinc-50">{status}</span>
           </span>
         </div>
-        <Link
-          href="/chat"
-          className="inline-block rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 transition"
-        >
-          Open Chat →
-        </Link>
+        <div className="flex gap-3 flex-wrap">
+          <Link
+            href="/autodoc"
+            className="inline-block rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 transition"
+          >
+            AutoDoc →
+          </Link>
+          <Link
+            href="/chat"
+            className="inline-block rounded-lg border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800 transition"
+          >
+            Chat →
+          </Link>
+          <Link
+            href="/agent"
+            className="inline-block rounded-lg border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800 transition"
+          >
+            Agent →
+          </Link>
+        </div>
       </div>
     </main>
   );
