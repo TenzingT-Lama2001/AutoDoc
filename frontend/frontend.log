@@ -15,3 +15,16 @@ See more: https://nextjs.org/docs/app/guides/local-development
  GET / 200 in 1876ms (next.js: 1273ms, application-code: 603ms)
 ○ Compiling /chat ...
  GET /chat 200 in 6.7s (next.js: 6.6s, application-code: 96ms)
+✓ Compiled in 6.3s
+ GET /chat 200 in 5.9s (next.js: 5.4s, application-code: 549ms)
+ GET /chat 200 in 416ms (next.js: 16ms, application-code: 400ms)
+ GET /chat 200 in 505ms (next.js: 15ms, application-code: 490ms)
+ GET /chat 200 in 576ms (next.js: 88ms, application-code: 488ms)
+ GET /chat 200 in 597ms (next.js: 193ms, application-code: 404ms)
+ GET /chat 200 in 538ms (next.js: 19ms, application-code: 519ms)
+ GET /chat 200 in 539ms (next.js: 124ms, application-code: 415ms)
+ GET /chat 200 in 356ms (next.js: 19ms, application-code: 337ms)
+ GET /chat 200 in 245ms (next.js: 22ms, application-code: 223ms)
+ GET /chat 200 in 247ms (next.js: 121ms, application-code: 126ms)
+✓ Compiled in 862ms
+ GET /chat 200 in 208ms (next.js: 135ms, application-code: 73ms)

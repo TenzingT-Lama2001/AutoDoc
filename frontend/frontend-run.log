@@ -1,0 +1,20 @@
+(node:22756) [DEP0174] DeprecationWarning: Calling promisify on a function that returns a Promise is likely a mistake.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+> frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.109:3000
+- Environments: .env.local
+✓ Ready in 4.5s
+⚠ Slow filesystem detected. The benchmark took 261ms. If E:\AutoDoc\frontend\.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+
+ GET / 200 in 1656ms (next.js: 1118ms, application-code: 538ms)
+ GET /autodoc 200 in 2.4s (next.js: 2.2s, application-code: 123ms)
+ GET /chat 200 in 147ms (next.js: 91ms, application-code: 56ms)
+ GET /agent 200 in 764ms (next.js: 704ms, application-code: 59ms)
+ GET /autodoc 200 in 56ms (next.js: 8ms, application-code: 48ms)
+ GET /autodoc 200 in 173ms (next.js: 50ms, application-code: 122ms)
