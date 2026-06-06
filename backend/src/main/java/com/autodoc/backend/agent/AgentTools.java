@@ -65,6 +65,13 @@ public class AgentTools {
         return "Stored: " + key + " = " + value;
     }
 
+    @Tool(description = "Records a reasoning step for observability. Only call this when the system prompt explicitly instructs you to use it.")
+    public String think(String thought) {
+        Consumer<AgentStep> sink = stepSink.get();
+        if (sink != null) sink.accept(AgentStep.thought("Thought", thought));
+        return "Reasoning recorded.";
+    }
+
     @Tool(description = "Search long-term memory for relevant context from past README generations on similar repositories. Call this early if the project type seems familiar.")
     public String recallMemory(String query) {
         List<String> memories = memoryManager.recall(query, 3);
@@ -72,6 +79,11 @@ public class AgentTools {
         String result = String.join("\n---\n", memories);
         emitMemory("recallMemory", query, result);
         return result;
+    }
+
+    public void emitStep(AgentStep step) {
+        Consumer<AgentStep> sink = stepSink.get();
+        if (sink != null) sink.accept(step);
     }
 
     private void emitTool(String toolName, String input, String output) {

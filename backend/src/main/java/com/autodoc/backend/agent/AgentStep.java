@@ -9,7 +9,7 @@ public record AgentStep(
         String output,
         Instant timestamp
 ) {
-    public enum StepType { LLM, TOOL, MEMORY }
+    public enum StepType { LLM, TOOL, MEMORY, THOUGHT }
 
     public static AgentStep llm(String name, String output) {
         return new AgentStep(StepType.LLM, name, null, output, Instant.now());
@@ -21,5 +21,9 @@ public record AgentStep(
 
     public static AgentStep memory(String name, String query, String result) {
         return new AgentStep(StepType.MEMORY, name, query, result, Instant.now());
+    }
+
+    public static AgentStep thought(String name, String content) {
+        return new AgentStep(StepType.THOUGHT, name, null, content, Instant.now());
     }
 }

@@ -39,7 +39,12 @@
       "Bash(taskkill *)",
       "PowerShell(Stop-Process *)",
       "PowerShell(Get-NetTCPConnection *)",
-      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8080/health\" -Method Get | ConvertTo-Json)"
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8080/health\" -Method Get | ConvertTo-Json)",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c cd /d E:\\\\AutoDoc\\\\backend && mvnw.cmd spring-boot:run > backend-run.log 2> backend-err.log\" -WindowStyle Hidden -PassThru | Select-Object Id)",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c cd /d E:\\\\AutoDoc\\\\frontend && npm run dev > frontend-run.log 2> frontend-err.log\" -WindowStyle Hidden -PassThru | Select-Object Id)",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c cd /d E:\\\\AutoDoc\\\\backend && .\\\\mvnw.cmd spring-boot:run > backend-run.log 2> backend-err.log\" -WindowStyle Hidden -PassThru | Select-Object Id)",
+      "Bash(xargs ls -la)",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList '/c cd /d E:\\\\AutoDoc\\\\backend && .\\\\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local > backend-run.log 2> backend-err.log' -WindowStyle Hidden -PassThru | Select-Object Id)"
     ]
   }
 }

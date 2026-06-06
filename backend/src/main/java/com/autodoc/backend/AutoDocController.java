@@ -4,6 +4,10 @@ import com.autodoc.backend.agent.Agent;
 import com.autodoc.backend.agent.AgentRun;
 import com.autodoc.backend.agent.AgentTools;
 import com.autodoc.backend.agent.AgentStep;
+import com.autodoc.backend.agent.strategy.DefaultStrategy;
+import com.autodoc.backend.agent.strategy.PlanningStrategy;
+import com.autodoc.backend.agent.strategy.ReActStrategy;
+import com.autodoc.backend.agent.strategy.ReflectionStrategy;
 import com.autodoc.backend.memory.MemoryManager;
 import com.autodoc.backend.memory.WorkingMemory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,6 +63,10 @@ public class AutoDocController {
     private final MemoryManager memoryManager;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
+    private final PlanningStrategy defaultStrategy = new DefaultStrategy();
+    private final PlanningStrategy reactStrategy = new ReActStrategy();
+    private final PlanningStrategy reflectionStrategy = new ReflectionStrategy();
+
     public AutoDocController(ChatClient.Builder builder, AgentTools agentTools,
                              ObjectMapper objectMapper, MemoryManager memoryManager) {
         this.chatClient = builder.build();
@@ -67,8 +75,17 @@ public class AutoDocController {
         this.memoryManager = memoryManager;
     }
 
+    private PlanningStrategy selectStrategy(String name) {
+        return switch (name.toLowerCase()) {
+            case "react" -> reactStrategy;
+            case "default" -> defaultStrategy;
+            default -> reflectionStrategy;
+        };
+    }
+
     @GetMapping(value = "/run", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter run(@RequestParam String repoUrl) {
+    public SseEmitter run(@RequestParam String repoUrl,
+                          @RequestParam(defaultValue = "reflect") String strategy) {
         SseEmitter emitter = new SseEmitter(10 * 60 * 1000L);
 
         executor.submit(() -> {
@@ -103,12 +120,13 @@ public class AutoDocController {
                             repoUrl, pastMemories.size() + " relevant memory/memories injected into prompt"));
                 }
 
-                String result = chatClient.prompt()
-                        .system(systemPrompt)
-                        .user("Generate a professional README.md for this GitHub repository: " + repoUrl)
-                        .tools(agentTools)
-                        .call()
-                        .content();
+                PlanningStrategy planningStrategy = selectStrategy(strategy);
+                String result = planningStrategy.execute(
+                        chatClient,
+                        agentTools,
+                        systemPrompt,
+                        "Generate a professional README.md for this GitHub repository: " + repoUrl
+                );
 
                 agentRun.addStep(AgentStep.llm("AutoDoc completed", result));
                 agentRun.complete(result);
