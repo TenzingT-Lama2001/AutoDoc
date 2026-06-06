@@ -1,0 +1,7 @@
+(node:12736) [DEP0174] DeprecationWarning: Calling promisify on a function that returns a Promise is likely a mistake.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+npm notice 
+npm notice New major version of npm available! 7.17.0 -> 11.16.0
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v11.16.0>
+npm notice Run `npm install -g npm@11.16.0` to update!
+npm notice 

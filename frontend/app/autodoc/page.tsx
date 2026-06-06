@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 
 interface AgentStep {
-  type: "LLM" | "TOOL" | "MEMORY";
+  type: "LLM" | "TOOL" | "MEMORY" | "THOUGHT";
   name: string;
   input: string | null;
   output: string;
@@ -18,8 +18,17 @@ interface AgentRunResult {
   result: string;
 }
 
+type Strategy = "reflect" | "react" | "default";
+
+const STRATEGIES: { value: Strategy; label: string; description: string; disabled?: boolean }[] = [
+  { value: "reflect", label: "Reflect", description: "Generates then self-reviews for accuracy", disabled: true },
+  { value: "react", label: "ReAct", description: "Thinks before each action" },
+  { value: "default", label: "Default", description: "Single-pass generation" },
+];
+
 export default function AutoDocPage() {
   const [repoUrl, setRepoUrl] = useState("");
+  const [strategy, setStrategy] = useState<Strategy>("react");
   const [steps, setSteps] = useState<AgentStep[]>([]);
   const [running, setRunning] = useState(false);
   const [finalResult, setFinalResult] = useState<AgentRunResult | null>(null);
@@ -37,7 +46,7 @@ export default function AutoDocPage() {
     setRunning(true);
 
     const es = new EventSource(
-      `${apiUrl}/autodoc/run?repoUrl=${encodeURIComponent(repoUrl)}`
+      `${apiUrl}/autodoc/run?repoUrl=${encodeURIComponent(repoUrl)}&strategy=${strategy}`
     );
     esRef.current = es;
 
@@ -98,6 +107,27 @@ export default function AutoDocPage() {
           </button>
         </div>
 
+        <div className="flex gap-2 flex-wrap">
+          {STRATEGIES.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => !s.disabled && setStrategy(s.value)}
+              disabled={running || s.disabled}
+              title={s.disabled ? "Disabled" : s.description}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 disabled:cursor-not-allowed ${
+                strategy === s.value
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900"
+                  : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+          <span className="text-xs text-zinc-400 self-center">
+            {STRATEGIES.find((s) => s.value === strategy)?.description}
+          </span>
+        </div>
+
         {steps.length > 0 && (
           <div className="flex flex-col gap-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
@@ -111,6 +141,8 @@ export default function AutoDocPage() {
                     ? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950"
                     : step.type === "MEMORY"
                     ? "border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950"
+                    : step.type === "THOUGHT"
+                    ? "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950"
                     : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
                 }`}
               >
@@ -121,6 +153,8 @@ export default function AutoDocPage() {
                         ? "bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200"
                         : step.type === "MEMORY"
                         ? "bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200"
+                        : step.type === "THOUGHT"
+                        ? "bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200"
                         : "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
                     }`}
                   >
