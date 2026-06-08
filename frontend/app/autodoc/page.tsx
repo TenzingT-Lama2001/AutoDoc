@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 
 interface AgentStep {
   type: "LLM" | "TOOL" | "MEMORY" | "THOUGHT";
@@ -79,13 +80,21 @@ export default function AutoDocPage() {
   return (
     <main className="flex min-h-screen flex-col items-center bg-zinc-50 dark:bg-zinc-950 p-6">
       <div className="w-full max-w-3xl flex flex-col gap-5">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            AutoDoc
-          </h1>
-          <p className="text-sm text-zinc-500 mt-1">
-            Paste a public GitHub repository URL and get a generated README.md.
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+              AutoDoc
+            </h1>
+            <p className="text-sm text-zinc-500 mt-1">
+              Paste a public GitHub repository URL and get a generated README.md.
+            </p>
+          </div>
+          <Link
+            href="/runs"
+            className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition"
+          >
+            Past Runs →
+          </Link>
         </div>
 
         <div className="flex gap-2">
