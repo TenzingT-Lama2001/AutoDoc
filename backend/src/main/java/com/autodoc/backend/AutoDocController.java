@@ -8,6 +8,7 @@ import com.autodoc.backend.agent.strategy.DefaultStrategy;
 import com.autodoc.backend.agent.strategy.PlanningStrategy;
 import com.autodoc.backend.agent.strategy.ReActStrategy;
 import com.autodoc.backend.agent.strategy.ReflectionStrategy;
+import com.autodoc.backend.agent.strategy.StrategyResult;
 import com.autodoc.backend.memory.MemoryManager;
 import com.autodoc.backend.memory.WorkingMemory;
 import com.autodoc.backend.trace.TraceRepository;
@@ -130,20 +131,21 @@ public class AutoDocController {
                 }
 
                 PlanningStrategy planningStrategy = selectStrategy(strategy);
-                String result = planningStrategy.execute(
+                StrategyResult sr = planningStrategy.execute(
                         chatClient,
                         agentTools,
                         systemPrompt,
                         "Generate a professional README.md for this GitHub repository: " + repoUrl
                 );
 
-                agentRun.addStep(AgentStep.llm("AutoDoc completed", result));
-                agentRun.complete(result);
-                traceRepository.completeRun(agentRun.getId(), "DONE", result);
+                agentRun.addStep(AgentStep.llm("AutoDoc completed", sr.content()));
+                agentRun.complete(sr.content());
+                traceRepository.completeRun(agentRun.getId(), "DONE", sr.content(), sr.inputTokens(), sr.outputTokens());
 
                 // Store what the agent learned as long-term memory for future runs
                 String memorySummary = buildMemorySummary(workingMemory, repoUrl);
                 memoryManager.storeMemory(agentRun.getId(), repoUrl, memorySummary);
+
 
                 emitter.send(SseEmitter.event()
                         .name("done")
@@ -152,7 +154,7 @@ public class AutoDocController {
 
             } catch (Exception e) {
                 agentRun.fail(e.getMessage());
-                traceRepository.completeRun(agentRun.getId(), "FAILED", e.getMessage());
+                traceRepository.completeRun(agentRun.getId(), "FAILED", e.getMessage(), 0, 0);
                 try {
                     emitter.send(SseEmitter.event()
                             .name("done")

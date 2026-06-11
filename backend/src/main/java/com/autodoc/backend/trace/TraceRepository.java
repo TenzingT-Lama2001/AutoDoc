@@ -47,6 +47,8 @@ public class TraceRepository {
                     timestamp   TIMESTAMPTZ NOT NULL
                 )""");
         jdbc.execute("CREATE INDEX IF NOT EXISTS idx_agent_steps_run_id ON agent_steps(run_id)");
+        jdbc.execute("ALTER TABLE agent_runs ADD COLUMN IF NOT EXISTS input_tokens  INT NOT NULL DEFAULT 0");
+        jdbc.execute("ALTER TABLE agent_runs ADD COLUMN IF NOT EXISTS output_tokens INT NOT NULL DEFAULT 0");
     }
 
     public void insertRun(String runId, String repoUrl, String strategy) {
@@ -72,11 +74,11 @@ public class TraceRepository {
         }
     }
 
-    public void completeRun(String runId, String status, String result) {
+    public void completeRun(String runId, String status, String result, int inputTokens, int outputTokens) {
         try {
             jdbc.update(
-                "UPDATE agent_runs SET status = ?, result = ?, completed_at = ? WHERE id = ?",
-                status, result, Timestamp.from(Instant.now()), runId
+                "UPDATE agent_runs SET status = ?, result = ?, completed_at = ?, input_tokens = ?, output_tokens = ? WHERE id = ?",
+                status, result, Timestamp.from(Instant.now()), inputTokens, outputTokens, runId
             );
         } catch (Exception e) {
             log.warn("Failed to complete run {}: {}", runId, e.getMessage());
@@ -88,7 +90,8 @@ public class TraceRepository {
                 SELECT r.id, r.repo_url, r.strategy, r.status,
                        r.started_at, r.completed_at,
                        EXTRACT(EPOCH FROM (COALESCE(r.completed_at, NOW()) - r.started_at))::int AS duration_seconds,
-                       COUNT(s.id) AS step_count
+                       COUNT(s.id) AS step_count,
+                       r.input_tokens, r.output_tokens
                 FROM agent_runs r
                 LEFT JOIN agent_steps s ON s.run_id = r.id
                 GROUP BY r.id
@@ -99,7 +102,8 @@ public class TraceRepository {
     public Optional<Map<String, Object>> getRunById(String id) {
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT id, repo_url, strategy, status, started_at, completed_at, result,
-                       EXTRACT(EPOCH FROM (COALESCE(completed_at, NOW()) - started_at))::int AS duration_seconds
+                       EXTRACT(EPOCH FROM (COALESCE(completed_at, NOW()) - started_at))::int AS duration_seconds,
+                       input_tokens, output_tokens
                 FROM agent_runs WHERE id = ?
                 """, id);
         return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));

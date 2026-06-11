@@ -16,11 +16,12 @@ public class TraceController {
     record StepRecord(int stepOrder, String type, String name, String input, String output, Instant timestamp) {}
 
     record RunSummary(String id, String repoUrl, String strategy, String status,
-                      Instant startedAt, Instant completedAt, int durationSeconds, long stepCount) {}
+                      Instant startedAt, Instant completedAt, int durationSeconds, long stepCount,
+                      int inputTokens, int outputTokens) {}
 
     record RunDetail(String id, String repoUrl, String strategy, String status,
                      Instant startedAt, Instant completedAt, int durationSeconds,
-                     String result, List<StepRecord> steps) {}
+                     String result, List<StepRecord> steps, int inputTokens, int outputTokens) {}
 
     private final TraceRepository repo;
 
@@ -50,7 +51,9 @@ public class TraceController {
             toInstant(row.get("started_at")),
             toInstant(row.get("completed_at")),
             toInt(row.get("duration_seconds")),
-            toLong(row.get("step_count"))
+            toLong(row.get("step_count")),
+            toInt(row.get("input_tokens")),
+            toInt(row.get("output_tokens"))
         );
     }
 
@@ -64,7 +67,9 @@ public class TraceController {
             toInstant(row.get("completed_at")),
             toInt(row.get("duration_seconds")),
             (String) row.get("result"),
-            steps
+            steps,
+            toInt(row.get("input_tokens")),
+            toInt(row.get("output_tokens"))
         );
     }
 

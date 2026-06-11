@@ -22,6 +22,8 @@ interface RunDetail {
   durationSeconds: number;
   result: string | null;
   steps: StepRecord[];
+  inputTokens: number;
+  outputTokens: number;
 }
 
 const STEP_CARD: Record<string, string> = {
@@ -43,6 +45,17 @@ const STATUS_STYLES: Record<string, string> = {
   FAILED: "text-red-600 dark:text-red-400",
   RUNNING: "text-amber-600 dark:text-amber-400",
 };
+
+const INPUT_RATE = 1.00;
+const OUTPUT_RATE = 5.00;
+
+function computeCost(inputTokens: number, outputTokens: number): number {
+  return (inputTokens / 1_000_000) * INPUT_RATE + (outputTokens / 1_000_000) * OUTPUT_RATE;
+}
+
+function formatCost(cost: number): string {
+  return `$${cost.toFixed(4)}`;
+}
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;
@@ -171,6 +184,11 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
                 </span>
                 <span>{run.steps.length} steps</span>
                 <span>{formatDuration(run.durationSeconds)}</span>
+                {run.inputTokens > 0 && (
+                  <span className="font-mono">
+                    {run.inputTokens.toLocaleString()} in / {run.outputTokens.toLocaleString()} out → {formatCost(computeCost(run.inputTokens, run.outputTokens))}
+                  </span>
+                )}
                 <span>{new Date(run.startedAt).toLocaleString()}</span>
               </div>
             </div>
