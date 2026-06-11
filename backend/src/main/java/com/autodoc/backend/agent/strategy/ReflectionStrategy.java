@@ -3,6 +3,7 @@ package com.autodoc.backend.agent.strategy;
 import com.autodoc.backend.agent.AgentStep;
 import com.autodoc.backend.agent.AgentTools;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 
 public class ReflectionStrategy implements PlanningStrategy {
 
@@ -28,14 +29,19 @@ public class ReflectionStrategy implements PlanningStrategy {
             """;
 
     @Override
-    public String execute(ChatClient chatClient, AgentTools agentTools, String systemPrompt, String goal) {
+    public StrategyResult execute(ChatClient chatClient, AgentTools agentTools, String systemPrompt, String goal) {
         // Call 1: generate draft with explicit reasoning
-        String draft = chatClient.prompt()
+        ChatResponse draftResponse = chatClient.prompt()
                 .system(REACT_PREFIX + systemPrompt)
                 .user(goal)
                 .tools(agentTools)
                 .call()
-                .content();
+                .chatResponse();
+        var usage1 = draftResponse.getMetadata().getUsage();
+        int inputTokens = usage1.getPromptTokens() != null ? usage1.getPromptTokens().intValue() : 0;
+        int outputTokens = usage1.getCompletionTokens() != null ? usage1.getCompletionTokens().intValue() : 0;
+
+        String draft = draftResponse.getResult().getOutput().getText();
 
         // Signal to the frontend that reflection is starting
         agentTools.emitStep(AgentStep.memory(
@@ -48,11 +54,16 @@ public class ReflectionStrategy implements PlanningStrategy {
         String draftForReview = draft.length() > 6000 ? draft.substring(0, 6000) + "\n…[truncated]" : draft;
 
         // Call 2: self-review — Claude can re-read files to check its own claims
-        return chatClient.prompt()
+        ChatResponse reviewResponse = chatClient.prompt()
                 .system(REVIEW_SYSTEM_PROMPT)
                 .user("Original request: " + goal + "\n\nREADME draft to review:\n\n" + draftForReview)
                 .tools(agentTools)
                 .call()
-                .content();
+                .chatResponse();
+        var usage2 = reviewResponse.getMetadata().getUsage();
+        inputTokens += usage2.getPromptTokens() != null ? usage2.getPromptTokens().intValue() : 0;
+        outputTokens += usage2.getCompletionTokens() != null ? usage2.getCompletionTokens().intValue() : 0;
+
+        return new StrategyResult(reviewResponse.getResult().getOutput().getText(), inputTokens, outputTokens);
     }
 }

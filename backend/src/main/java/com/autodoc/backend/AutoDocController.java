@@ -8,8 +8,10 @@ import com.autodoc.backend.agent.strategy.DefaultStrategy;
 import com.autodoc.backend.agent.strategy.PlanningStrategy;
 import com.autodoc.backend.agent.strategy.ReActStrategy;
 import com.autodoc.backend.agent.strategy.ReflectionStrategy;
+import com.autodoc.backend.agent.strategy.StrategyResult;
 import com.autodoc.backend.memory.MemoryManager;
 import com.autodoc.backend.memory.WorkingMemory;
+import com.autodoc.backend.trace.TraceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.MediaType;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @RestController
@@ -61,6 +64,7 @@ public class AutoDocController {
     private final AgentTools agentTools;
     private final ObjectMapper objectMapper;
     private final MemoryManager memoryManager;
+    private final TraceRepository traceRepository;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final PlanningStrategy defaultStrategy = new DefaultStrategy();
@@ -68,11 +72,13 @@ public class AutoDocController {
     private final PlanningStrategy reflectionStrategy = new ReflectionStrategy();
 
     public AutoDocController(ChatClient.Builder builder, AgentTools agentTools,
-                             ObjectMapper objectMapper, MemoryManager memoryManager) {
+                             ObjectMapper objectMapper, MemoryManager memoryManager,
+                             TraceRepository traceRepository) {
         this.chatClient = builder.build();
         this.agentTools = agentTools;
         this.objectMapper = objectMapper;
         this.memoryManager = memoryManager;
+        this.traceRepository = traceRepository;
     }
 
     private PlanningStrategy selectStrategy(String name) {
@@ -91,6 +97,9 @@ public class AutoDocController {
         executor.submit(() -> {
             AgentRun agentRun = new AgentRun(repoUrl);
             WorkingMemory workingMemory = new WorkingMemory();
+            AtomicInteger stepOrder = new AtomicInteger(0);
+
+            traceRepository.insertRun(agentRun.getId(), repoUrl, strategy);
 
             agentRun.setStepListener(step -> {
                 try {
@@ -100,6 +109,7 @@ public class AutoDocController {
                 } catch (Exception e) {
                     emitter.completeWithError(e);
                 }
+                traceRepository.insertStep(agentRun.getId(), step, stepOrder.getAndIncrement());
             });
 
             AgentTools.stepSink.set(agentRun::addStep);
@@ -121,19 +131,21 @@ public class AutoDocController {
                 }
 
                 PlanningStrategy planningStrategy = selectStrategy(strategy);
-                String result = planningStrategy.execute(
+                StrategyResult sr = planningStrategy.execute(
                         chatClient,
                         agentTools,
                         systemPrompt,
                         "Generate a professional README.md for this GitHub repository: " + repoUrl
                 );
 
-                agentRun.addStep(AgentStep.llm("AutoDoc completed", result));
-                agentRun.complete(result);
+                agentRun.addStep(AgentStep.llm("AutoDoc completed", sr.content()));
+                agentRun.complete(sr.content());
+                traceRepository.completeRun(agentRun.getId(), "DONE", sr.content(), sr.inputTokens(), sr.outputTokens());
 
                 // Store what the agent learned as long-term memory for future runs
                 String memorySummary = buildMemorySummary(workingMemory, repoUrl);
                 memoryManager.storeMemory(agentRun.getId(), repoUrl, memorySummary);
+
 
                 emitter.send(SseEmitter.event()
                         .name("done")
@@ -142,6 +154,7 @@ public class AutoDocController {
 
             } catch (Exception e) {
                 agentRun.fail(e.getMessage());
+                traceRepository.completeRun(agentRun.getId(), "FAILED", e.getMessage(), 0, 0);
                 try {
                     emitter.send(SseEmitter.event()
                             .name("done")
